@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CP Habit Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --card: #13131f;
+    --border: #1e1e2e;
+    --accent: #00ff88;
+    --accent2: #ff6b35;
+    --accent3: #7c3aed;
+    --text: #e8e8f0;
+    --muted: #555570;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    padding: 2rem 1rem 4rem;
+  }
+  .app { max-width: 720px; margin: 0 auto; }
+
+  .header { margin-bottom: 2rem; }
+  .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.25rem; }
+  .logo { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; color: var(--accent); text-transform: uppercase; letter-spacing: 0.15em; }
+  .today-date { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; color: var(--muted); }
+  h1 { font-size: 1.75rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; }
+  h1 span { color: var(--accent); }
+
+  /* TABS */
+  .tabs { display: flex; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+  .tab {
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    padding: 0.6rem 1.2rem; cursor: pointer; color: var(--muted);
+    border: none; border-bottom: 2px solid transparent; margin-bottom: -1px;
+    background: none; transition: all 0.15s;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* STREAK */
+  .streak-banner {
+    background: var(--card); border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 1rem 1.25rem;
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1.5rem; gap: 1rem; flex-wrap: wrap;
+  }
+  .streak-main { display: flex; align-items: baseline; gap: 0.5rem; }
+  .streak-num { font-family: 'IBM Plex Mono', monospace; font-size: 2.5rem; font-weight: 700; color: var(--accent); line-height: 1; }
+  .streak-label { font-size: 0.85rem; color: var(--muted); }
+  .streak-stats { display: flex; gap: 1.5rem; }
+  .s-stat { text-align: center; }
+  .s-stat-num { font-family: 'IBM Plex Mono', monospace; font-size: 1.1rem; font-weight: 600; color: var(--text); display: block; }
+  .s-stat-label { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+
+  /* CHECK-IN */
+  .checkin-card { background: var(--card); border: 1px solid var(--border); padding: 1.25rem; margin-bottom: 1.5rem; }
+  .checkin-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 0.75rem; }
+  .tasks { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
+  .task {
+    display: flex; align-items: center; gap: 0.75rem;
+    padding: 0.6rem 0.75rem; background: var(--surface);
+    border: 1px solid var(--border); cursor: pointer; transition: all 0.15s; user-select: none;
+  }
+  .task:hover { border-color: var(--muted); }
+  .task.done { background: rgba(0,255,136,0.06); border-color: rgba(0,255,136,0.25); }
+  .task-box { width: 18px; height: 18px; border: 1.5px solid var(--muted); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.7rem; color: var(--accent); }
+  .task.done .task-box { border-color: var(--accent); background: rgba(0,255,136,0.15); }
+  .task-text { font-size: 0.85rem; font-weight: 600; flex: 1; transition: color 0.15s; }
+  .task.done .task-text { color: var(--muted); text-decoration: line-through; }
+  .task-phase { font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem; color: var(--muted); padding: 2px 6px; border: 1px solid var(--border); white-space: nowrap; }
+
+  .stamp-btn {
+    width: 100%; background: rgba(0,255,136,0.08); border: 1px solid rgba(0,255,136,0.3);
+    color: var(--accent); font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem; font-weight: 600; padding: 0.8rem; cursor: pointer;
+    text-transform: uppercase; letter-spacing: 0.1em; transition: all 0.15s;
+  }
+  .stamp-btn:hover { background: rgba(0,255,136,0.15); border-color: var(--accent); }
+  .stamp-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .stamp-btn.stamped { background: rgba(0,255,136,0.12); border-color: var(--accent); }
+
+  /* CALENDAR */
+  .cal-section { margin-bottom: 1.5rem; }
+  .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+  .cal-title { font-size: 1rem; font-weight: 700; }
+  .cal-nav { display: flex; gap: 0.5rem; }
+  .cal-nav button { background: var(--surface); border: 1px solid var(--border); color: var(--text); font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; padding: 0.3rem 0.6rem; cursor: pointer; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .cal-dow { text-align: center; font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem; color: var(--muted); text-transform: uppercase; padding: 0.3rem 0; }
+  .cal-day {
+    aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; cursor: pointer;
+    border: 1px solid transparent; border-radius: 2px; background: var(--surface);
+    transition: all 0.15s; position: relative;
+  }
+  .cal-day:hover { border-color: var(--muted); }
+  .cal-day.empty { background: transparent; cursor: default; }
+  .cal-day.today { border-color: var(--muted); font-weight: 700; }
+  .cal-day.done { background: rgba(0,255,136,0.15); border-color: rgba(0,255,136,0.4); color: var(--accent); font-weight: 700; }
+  .cal-day.done::after { content: '✕'; position: absolute; font-size: 1.4rem; color: var(--accent); opacity: 0.6; }
+  .cal-day.done span { opacity: 0; }
+  .cal-day.future { opacity: 0.3; cursor: default; }
+
+  /* NOTE */
+  .note-section { margin-bottom: 1.5rem; }
+  .section-title { font-size: 0.65rem; font-family: 'IBM Plex Mono', monospace; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 0.75rem; }
+  .note-input { width: 100%; background: var(--card); border: 1px solid var(--border); color: var(--text); font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; padding: 0.75rem 1rem; resize: vertical; min-height: 70px; outline: none; }
+  .note-input:focus { border-color: var(--muted); }
+  .note-input::placeholder { color: var(--muted); }
+
+  /* KURIKULUM */
+  .phase-block { margin-bottom: 0.75rem; border: 1px solid var(--border); background: var(--card); overflow: hidden; }
+  .phase-header-row {
+    display: flex; align-items: center; gap: 0.85rem;
+    padding: 0.9rem 1.1rem; cursor: pointer; user-select: none; transition: background 0.15s;
+  }
+  .phase-header-row:hover { background: #1a1a2a; }
+  .phase-dot-sm {
+    width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; font-weight: 700;
+  }
+  .p0 .phase-dot-sm { background: rgba(0,255,136,0.15); border: 1px solid #00ff88; color: #00ff88; }
+  .p1 .phase-dot-sm { background: rgba(255,107,53,0.15); border: 1px solid #ff6b35; color: #ff6b35; }
+  .p2 .phase-dot-sm { background: rgba(124,58,237,0.15); border: 1px solid #7c3aed; color: #7c3aed; }
+  .p3 .phase-dot-sm { background: rgba(0,200,255,0.15); border: 1px solid #00c8ff; color: #00c8ff; }
+  .p4 .phase-dot-sm { background: rgba(255,200,0,0.15); border: 1px solid #ffc800; color: #ffc800; }
+  .p5 .phase-dot-sm { background: rgba(255,50,100,0.15); border: 1px solid #ff3264; color: #ff3264; }
+
+  .phase-info { flex: 1; min-width: 0; }
+  .phase-info-name { font-size: 0.88rem; font-weight: 700; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .phase-bar-wrap { height: 3px; background: var(--border); border-radius: 2px; }
+  .phase-bar { height: 100%; border-radius: 2px; transition: width 0.4s; }
+  .p0 .phase-bar { background: #00ff88; }
+  .p1 .phase-bar { background: #ff6b35; }
+  .p2 .phase-bar { background: #7c3aed; }
+  .p3 .phase-bar { background: #00c8ff; }
+  .p4 .phase-bar { background: #ffc800; }
+  .p5 .phase-bar { background: #ff3264; }
+
+  .phase-right { display: flex; align-items: center; gap: 0.65rem; flex-shrink: 0; }
+  .phase-pct-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: var(--muted); }
+  .phase-duration-tag { font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem; padding: 2px 7px; border-radius: 2px; text-transform: uppercase; letter-spacing: 0.07em; }
+  .p0 .phase-duration-tag { background: rgba(0,255,136,0.1); color: #00ff88; }
+  .p1 .phase-duration-tag { background: rgba(255,107,53,0.1); color: #ff6b35; }
+  .p2 .phase-duration-tag { background: rgba(124,58,237,0.1); color: #7c3aed; }
+  .p3 .phase-duration-tag { background: rgba(0,200,255,0.1); color: #00c8ff; }
+  .p4 .phase-duration-tag { background: rgba(255,200,0,0.1); color: #ffc800; }
+  .p5 .phase-duration-tag { background: rgba(255,50,100,0.1); color: #ff3264; }
+  .phase-chevron { font-size: 0.65rem; color: var(--muted); transition: transform 0.2s; }
+  .phase-block.open .phase-chevron { transform: rotate(90deg); }
+
+  .topic-list { display: none; padding: 0 1.1rem 1.1rem; border-top: 1px solid var(--border); }
+  .phase-block.open .topic-list { display: block; }
+
+  .milestone-box {
+    margin: 0.9rem 0;
+    background: var(--surface); border-left: 2px solid;
+    padding: 0.6rem 0.85rem; font-size: 0.78rem; color: var(--muted);
+  }
+  .p0 .milestone-box { border-color: #00ff88; }
+  .p1 .milestone-box { border-color: #ff6b35; }
+  .p2 .milestone-box { border-color: #7c3aed; }
+  .p3 .milestone-box { border-color: #00c8ff; }
+  .p4 .milestone-box { border-color: #ffc800; }
+  .p5 .milestone-box { border-color: #ff3264; }
+  .milestone-box strong { color: var(--text); }
+
+  .topics-checklist { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 4px; }
+  .topic-check {
+    display: flex; align-items: flex-start; gap: 0.55rem;
+    padding: 0.48rem 0.65rem; background: var(--surface);
+    border: 1px solid var(--border); cursor: pointer;
+    transition: all 0.15s; user-select: none;
+  }
+  .topic-check:hover { border-color: var(--muted); }
+  .topic-check.checked { background: rgba(0,255,136,0.05); border-color: rgba(0,255,136,0.2); }
+  .topic-check-box {
+    width: 13px; height: 13px; border: 1.5px solid var(--muted);
+    flex-shrink: 0; margin-top: 2px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.55rem; transition: all 0.15s;
+  }
+  .topic-check.checked .topic-check-box { border-color: var(--accent); background: rgba(0,255,136,0.2); color: var(--accent); }
+  .topic-check-label { font-size: 0.77rem; line-height: 1.35; transition: color 0.15s; }
+  .topic-check.checked .topic-check-label { color: var(--muted); text-decoration: line-through; }
+
+  .footer-tip { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-align: center; padding: 1.5rem 0 0; border-top: 1px solid var(--border); margin-top: 1rem; }
+
+  .toast {
+    position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px);
+    background: var(--accent); color: #0a0a0f;
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; font-weight: 700;
+    padding: 0.6rem 1.5rem; transition: transform 0.3s ease; z-index: 999;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  @media (max-width: 500px) {
+    .streak-stats { gap: 1rem; }
+    .topics-checklist { grid-template-columns: 1fr; }
+    .phase-duration-tag { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div class="header-top">
+      <span class="logo">// CP Habit Tracker</span>
+      <span class="today-date" id="todayDate"></span>
+    </div>
+    <h1>Jangan Putus<br><span>Rantainya.</span></h1>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('daily', this)">Harian</button>
+    <button class="tab" onclick="switchTab('kurikulum', this)">Kurikulum</button>
+    <button class="tab" onclick="switchTab('kalender', this)">Kalender</button>
+  </div>
+
+  <!-- TAB: HARIAN -->
+  <div class="panel active" id="panel-daily">
+    <div class="streak-banner">
+      <div class="streak-main">
+        <span class="streak-num" id="streakNum">0</span>
+        <span class="streak-label">hari streak 🔥</span>
+      </div>
+      <div class="streak-stats">
+        <div class="s-stat"><span class="s-stat-num" id="totalDays">0</span><span class="s-stat-label">Total Hari</span></div>
+        <div class="s-stat"><span class="s-stat-num" id="bestStreak">0</span><span class="s-stat-label">Best Streak</span></div>
+        <div class="s-stat"><span class="s-stat-num" id="thisMonth">0</span><span class="s-stat-label">Bulan Ini</span></div>
+      </div>
+    </div>
+
+    <div class="checkin-card">
+      <div class="checkin-label">// Hari ini — apa yang udah dikerjain?</div>
+      <div class="tasks" id="taskList"></div>
+      <button class="stamp-btn" id="stampBtn" onclick="stampToday()">✕ &nbsp; TANDAI HARI INI SELESAI</button>
+    </div>
+
+    <div class="note-section">
+      <div class="section-title">// Catatan hari ini</div>
+      <textarea class="note-input" id="noteInput" placeholder="Tadi belajar apa? Stuck di mana? Insight apa yang didapat?..." oninput="saveNote()"></textarea>
+    </div>
+  </div>
+
+  <!-- TAB: KURIKULUM -->
+  <div class="panel" id="panel-kurikulum">
+    <div id="phaseBlocks"></div>
+  </div>
+
+  <!-- TAB: KALENDER -->
+  <div class="panel" id="panel-kalender">
+    <div class="cal-section">
+      <div class="cal-header">
+        <span class="cal-title" id="calMonthTitle"></span>
+        <div class="cal-nav">
+          <button onclick="changeMonth(-1)">◀</button>
+          <button onclick="changeMonth(1)">▶</button>
+        </div>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+  </div>
+
+  <div class="footer-tip" id="footerTip"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const PHASES = [
+  {
+    name: "Dasar Komputer & Mengenal C++", duration: "3–4 Minggu",
+    milestone: "Bisa bikin kalkulator sederhana dan program pola angka/bintang dari scratch tanpa lihat contoh.",
+    topics: ["Cara kerja komputer (CPU, RAM, Storage)","Apa itu program & compiler","Install VS Code + MinGW/GCC","Hello World pertama kamu","Variabel & tipe data dasar","Input/Output (cin, cout)","Operator aritmatika & logika","If/else & switch","Loop: for, while, do-while","Break, continue","Nested loops","Latihan: pola bintang, FizzBuzz"]
+  },
+  {
+    name: "Fungsi, Array & Pointer", duration: "4–6 Minggu",
+    milestone: "Pahami pointer dengan gambar di kertas. Bisa implement binary search manual pakai array.",
+    topics: ["Fungsi: deklarasi, definisi, parameter","Return value & void function","Rekursi dasar (factorial, fibonacci)","Array 1D dan 2D","String di C++ (std::string)","Pointer: apa itu alamat memori","Pointer arithmetic","Pass by value vs reference","Dynamic memory (new/delete)","Scope & lifetime variabel","Header files & basic STL","Vector basics"]
+  },
+  {
+    name: "OOP, STL & C++ untuk CP", duration: "4–5 Minggu",
+    milestone: "Hapal dan mengerti CP template. Bisa solve soal Codeforces Div.2 Problem A & B secara konsisten.",
+    topics: ["Struct & Class dasar","Constructor & methods","STL: vector, pair, tuple","STL: map, set, unordered_map","STL: stack, queue, deque","STL: priority_queue","sort() & custom comparator","Iterator dasar","Lambda functions","Template dasar","Teknik I/O cepat CP","Boilerplate CP template"]
+  },
+  {
+    name: "DSA Inti", duration: "3–4 Bulan",
+    milestone: "Solve 150+ soal LeetCode (mix Easy/Medium). Rating Codeforces naik ke 1200+.",
+    topics: ["Kompleksitas: Big-O, Time & Space","Linked List (manual implementation)","Stack & Queue (dari scratch)","Binary Search (semua variasi)","Two Pointers & Sliding Window","Prefix Sum & Difference Array","Sorting: merge, quick, heap","Recursion & Backtracking","Hash Map / Hash Table","Binary Tree & BST","DFS & BFS","Graph: representasi, traversal","Heap & Priority Queue","Greedy Algorithms","DP: Memoization & Tabulation","DP Klasik: Knapsack, LCS, LIS"]
+  },
+  {
+    name: "Algoritma Lanjutan & CP Techniques", duration: "3–4 Bulan",
+    milestone: "Bisa solve Codeforces Div.2 C & D secara konsisten. Rating mencapai 1600–1800.",
+    topics: ["Segment Tree","Fenwick Tree (BIT)","Sparse Table & RMQ","Disjoint Set Union (DSU)","Shortest Path: Dijkstra, Bellman-Ford","Floyd-Warshall","Minimum Spanning Tree (Kruskal, Prim)","Topological Sort","SCC (Strongly Connected Components)","DP on Trees","Bitmask DP","Number Theory (modular arith, GCD)","Sieve of Eratosthenes","Binary Lifting / LCA","Meet in the Middle","String: KMP, Z-function"]
+  },
+  {
+    name: "Kompetisi & Spesialisasi", duration: "Ongoing",
+    milestone: "Rating Codeforces 1900+ (Expert). Bisa lolos seleksi kompetisi kampus/nasional.",
+    topics: ["Ikut Codeforces Rounds reguler","Virtual contest training","Upsolving tiap contest","ICPC style problems","Advanced DP (convex hull trick)","Game Theory (Sprague-Grundy)","Flow Networks (Max Flow)","Sqrt Decomposition","Heavy-Light Decomposition","FFT / Polynomial","Suffix Array / Aho-Corasick","Persistent Data Structures"]
+  },
+];
+
+const DAILY_TASKS = [
+  { id: "t1", text: "Buka materi / baca referensi", phase: "P1–6" },
+  { id: "t2", text: "Tulis / ketik kode sendiri", phase: "P1–6" },
+  { id: "t3", text: "Solve minimal 1 soal", phase: "P3–6" },
+  { id: "t4", text: "Review / upsolving", phase: "P4–6" },
+];
+
+const TIPS = [
+  '"An expert is a beginner who kept going."',
+  "Kamu cuma perlu 25 menit hari ini. Mulai sekarang.",
+  "Don't break the chain. Satu tanda hari ini.",
+  "Stuck itu tanda otak lagi grow. Terus.",
+  "Review solusi orang lain = 2x belajar.",
+  "Progress lambat tetap progress. Diam itu mundur.",
+  "The best time to start was yesterday. Second best: now.",
+  "Konsistensi mengalahkan intensitas. Selalu.",
+];
+
+function load(k, def) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : def; } catch { return def; } }
+function save(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
+
+let doneDays   = new Set(load('cp_done_days', []));
+let taskState  = load('cp_today_tasks', {});
+let topicsDone = load('cp_topics', {});
+let notes      = load('cp_notes', {});
+let openPhases = new Set(load('cp_open_phases', []));
+
+const todayStr = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })();
+let calYear = new Date().getFullYear(), calMonth = new Date().getMonth();
+
+function calcStreak() {
+  const sorted = [...doneDays].sort();
+  if (!sorted.length) return { current: 0, best: 0 };
+  let best = 1, cur = 1;
+  for (let i = 1; i < sorted.length; i++) {
+    const diff = (new Date(sorted[i]) - new Date(sorted[i-1])) / 86400000;
+    if (diff === 1) { cur++; best = Math.max(best, cur); } else cur = 1;
+  }
+  const gap = (new Date(todayStr) - new Date(sorted[sorted.length-1])) / 86400000;
+  const currentStreak = gap <= 1 ? cur : 0;
+  return { current: currentStreak, best: Math.max(best, currentStreak) };
+}
+
+function thisMonthCount() {
+  const prefix = `${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}`;
+  return [...doneDays].filter(d => d.startsWith(prefix)).length;
+}
+
+function phaseProgress(pi) {
+  const total = PHASES[pi].topics.length;
+  const done = PHASES[pi].topics.filter((_, ti) => topicsDone[`p${pi}_t${ti}`]).length;
+  return total ? Math.round((done / total) * 100) : 0;
+}
+
+function renderStats() {
+  const { current, best } = calcStreak();
+  document.getElementById('streakNum').textContent = current;
+  document.getElementById('totalDays').textContent = doneDays.size;
+  document.getElementById('bestStreak').textContent = best;
+  document.getElementById('thisMonth').textContent = thisMonthCount();
+  const d = new Date();
+  const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  document.getElementById('todayDate').textContent = `${days[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function renderTasks() {
+  const tDay = taskState[todayStr] || {};
+  document.getElementById('taskList').innerHTML = DAILY_TASKS.map(t => `
+    <div class="task ${tDay[t.id] ? 'done' : ''}" onclick="toggleTask('${t.id}')">
+      <div class="task-box">${tDay[t.id] ? '✓' : ''}</div>
+      <span class="task-text">${t.text}</span>
+      <span class="task-phase">${t.phase}</span>
+    </div>`).join('');
+  const stamped = doneDays.has(todayStr);
+  const btn = document.getElementById('stampBtn');
+  btn.disabled = stamped;
+  btn.textContent = stamped ? '✕  HARI INI SUDAH DITANDAI' : '✕   TANDAI HARI INI SELESAI';
+  btn.classList.toggle('stamped', stamped);
+}
+
+function renderCalendar() {
+  const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  document.getElementById('calMonthTitle').textContent = `${months[calMonth]} ${calYear}`;
+  const dows = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+  let html = dows.map(d => `<div class="cal-dow">${d}</div>`).join('');
+  const first = new Date(calYear, calMonth, 1).getDay();
+  const last  = new Date(calYear, calMonth+1, 0).getDate();
+  for (let i = 0; i < first; i++) html += `<div class="cal-day empty"></div>`;
+  for (let d = 1; d <= last; d++) {
+    const ds = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    let cls = 'cal-day';
+    if (doneDays.has(ds)) cls += ' done';
+    else if (ds === todayStr) cls += ' today';
+    else if (ds > todayStr) cls += ' future';
+    html += `<div class="${cls}" onclick="toggleDay('${ds}')"><span>${d}</span></div>`;
+  }
+  document.getElementById('calGrid').innerHTML = html;
+}
+
+function renderKurikulum() {
+  document.getElementById('phaseBlocks').innerHTML = PHASES.map((ph, pi) => {
+    const pct = phaseProgress(pi);
+    const isOpen = openPhases.has(pi);
+    return `
+    <div class="phase-block p${pi} ${isOpen ? 'open' : ''}" id="pb${pi}">
+      <div class="phase-header-row" onclick="togglePhase(${pi})">
+        <div class="phase-dot-sm">${String(pi+1).padStart(2,'0')}</div>
+        <div class="phase-info">
+          <div class="phase-info-name">${ph.name}</div>
+          <div class="phase-bar-wrap"><div class="phase-bar" style="width:${pct}%"></div></div>
+        </div>
+        <div class="phase-right">
+          <span class="phase-pct-label">${pct}%</span>
+          <span class="phase-duration-tag">${ph.duration}</span>
+          <span class="phase-chevron">▶</span>
+        </div>
+      </div>
+      <div class="topic-list">
+        <div class="milestone-box">🎯 <strong>Milestone:</strong> ${ph.milestone}</div>
+        <div class="topics-checklist">
+          ${ph.topics.map((topic, ti) => {
+            const key = `p${pi}_t${ti}`, checked = !!topicsDone[key];
+            return `<div class="topic-check ${checked ? 'checked' : ''}" onclick="toggleTopic(${pi},${ti})">
+              <div class="topic-check-box">${checked ? '✓' : ''}</div>
+              <span class="topic-check-label">${topic}</span>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderNote() { document.getElementById('noteInput').value = notes[todayStr] || ''; }
+
+function toggleTask(id) {
+  if (!taskState[todayStr]) taskState[todayStr] = {};
+  taskState[todayStr][id] = !taskState[todayStr][id];
+  save('cp_today_tasks', taskState); renderTasks();
+}
+
+function stampToday() {
+  if (doneDays.has(todayStr)) return;
+  doneDays.add(todayStr); save('cp_done_days', [...doneDays]);
+  renderAll(); showToast('✕ Hari ini dicatat! Jangan putus rantainya 🔥');
+}
+
+function toggleDay(ds) {
+  if (ds > todayStr) return;
+  if (doneDays.has(ds)) doneDays.delete(ds); else doneDays.add(ds);
+  save('cp_done_days', [...doneDays]); renderAll();
+}
+
+function changeMonth(dir) {
+  calMonth += dir;
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  renderCalendar();
+}
+
+function togglePhase(pi) {
+  if (openPhases.has(pi)) openPhases.delete(pi); else openPhases.add(pi);
+  save('cp_open_phases', [...openPhases]); renderKurikulum();
+}
+
+function toggleTopic(pi, ti) {
+  const key = `p${pi}_t${ti}`;
+  topicsDone[key] = !topicsDone[key];
+  save('cp_topics', topicsDone); renderKurikulum();
+}
+
+function saveNote() { notes[todayStr] = document.getElementById('noteInput').value; save('cp_notes', notes); }
+
+function switchTab(name, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById(`panel-${name}`).classList.add('active');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function renderAll() {
+  renderStats(); renderTasks(); renderCalendar(); renderKurikulum(); renderNote();
+  document.getElementById('footerTip').textContent = TIPS[new Date().getDay() % TIPS.length];
+}
+
+renderAll();
+</script>
+</body>
+</html>
