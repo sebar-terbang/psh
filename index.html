@@ -25,7 +25,11 @@
     min-height: 100vh;
     padding: 2rem 1rem 4rem;
   }
+
   .app { max-width: 760px; margin: 0 auto; }
+
+  .app { max-width: 720px; margin: 0 auto; }
+
 
   .header { margin-bottom: 2rem; }
   .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.25rem; }
@@ -33,6 +37,7 @@
   .today-date { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; color: var(--muted); }
   h1 { font-size: 1.75rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; }
   h1 span { color: var(--accent); }
+
 
   .tabs { display: flex; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
   .tab {
@@ -251,6 +256,25 @@
   .problems-progress-bar { flex: 1; height: 2px; background: var(--border); border-radius: 2px; }
   .problems-progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.3s; }
   .problems-progress-text { font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem; color: var(--muted); white-space: nowrap; }
+  .topics-checklist { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 4px; }
+  .topic-check {
+    display: flex; align-items: flex-start; gap: 0.55rem;
+    padding: 0.48rem 0.65rem; background: var(--surface);
+    border: 1px solid var(--border); cursor: pointer;
+    transition: all 0.15s; user-select: none;
+  }
+  .topic-check:hover { border-color: var(--muted); }
+  .topic-check.checked { background: rgba(0,255,136,0.05); border-color: rgba(0,255,136,0.2); }
+  .topic-check-box {
+    width: 13px; height: 13px; border: 1.5px solid var(--muted);
+    flex-shrink: 0; margin-top: 2px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.55rem; transition: all 0.15s;
+  }
+  .topic-check.checked .topic-check-box { border-color: var(--accent); background: rgba(0,255,136,0.2); color: var(--accent); }
+  .topic-check-label { font-size: 0.77rem; line-height: 1.35; transition: color 0.15s; }
+  .topic-check.checked .topic-check-label { color: var(--muted); text-decoration: line-through; }
+
 
   .footer-tip { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-align: center; padding: 1.5rem 0 0; border-top: 1px solid var(--border); margin-top: 1rem; }
 
@@ -266,6 +290,9 @@
     .streak-stats { gap: 1rem; }
     .phase-duration-tag { display: none; }
     .problem-link { display: none; }
+
+    .topics-checklist { grid-template-columns: 1fr; }
+    .phase-duration-tag { display: none; }
   }
 </style>
 </head>
@@ -298,6 +325,7 @@
         <div class="s-stat"><span class="s-stat-num" id="bestStreak">0</span><span class="s-stat-label">Best Streak</span></div>
         <div class="s-stat"><span class="s-stat-num" id="thisMonth">0</span><span class="s-stat-label">Bulan Ini</span></div>
         <div class="s-stat"><span class="s-stat-num" id="totalSolved">0</span><span class="s-stat-label">Soal Solved</span></div>
+
       </div>
     </div>
 
@@ -337,6 +365,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
+
 // ── PROBLEM DATA per topic (phase 4 = index 3, phase 5 = index 4) ─────────────
 const TOPIC_PROBLEMS = {
   // ── FASE 4: DSA Inti ──────────────────────────────────────────────────────
@@ -524,6 +553,7 @@ const TOPIC_PROBLEMS = {
   ],
 };
 
+
 const PHASES = [
   {
     name: "Dasar Komputer & Mengenal C++", duration: "3–4 Minggu",
@@ -578,6 +608,7 @@ const TIPS = [
 function load(k, def) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : def; } catch { return def; } }
 function save(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
 
+
 let doneDays    = new Set(load('cp_done_days', []));
 let taskState   = load('cp_today_tasks', {});
 let topicsDone  = load('cp_topics', {});
@@ -585,6 +616,7 @@ let problemsDone= load('cp_problems', {});
 let notes       = load('cp_notes', {});
 let openPhases  = new Set(load('cp_open_phases', []));
 let openProbs   = new Set(load('cp_open_probs', []));
+
 
 const todayStr = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })();
 let calYear = new Date().getFullYear(), calMonth = new Date().getMonth();
@@ -607,15 +639,18 @@ function thisMonthCount() {
   return [...doneDays].filter(d => d.startsWith(prefix)).length;
 }
 
+
 function totalSolvedCount() {
   return Object.values(problemsDone).filter(Boolean).length;
 }
+
 
 function phaseProgress(pi) {
   const total = PHASES[pi].topics.length;
   const done = PHASES[pi].topics.filter((_, ti) => topicsDone[`p${pi}_t${ti}`]).length;
   return total ? Math.round((done / total) * 100) : 0;
 }
+
 
 function getTopicProblems(pi, ti) {
   return TOPIC_PROBLEMS[`${pi}_${ti}`] || null;
@@ -628,6 +663,7 @@ function topicProblemStats(pi, ti) {
   return { solved, total: probs.length };
 }
 
+
 function renderStats() {
   const { current, best } = calcStreak();
   document.getElementById('streakNum').textContent = current;
@@ -635,7 +671,7 @@ function renderStats() {
   document.getElementById('bestStreak').textContent = best;
   document.getElementById('thisMonth').textContent = thisMonthCount();
   document.getElementById('totalSolved').textContent = totalSolvedCount();
-  const d = new Date();
+
   const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
   const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
   document.getElementById('todayDate').textContent = `${days[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
@@ -744,6 +780,11 @@ function renderKurikulum() {
                 </div>
                 ${probsPanelHtml}
               </div>`;
+
+            return `<div class="topic-check ${checked ? 'checked' : ''}" onclick="toggleTopic(${pi},${ti})">
+              <div class="topic-check-box">${checked ? '✓' : ''}</div>
+              <span class="topic-check-label">${topic}</span>
+            </div>`;
           }).join('')}
         </div>
       </div>
@@ -788,6 +829,7 @@ function toggleTopic(pi, ti) {
   topicsDone[key] = !topicsDone[key];
   save('cp_topics', topicsDone); renderKurikulum();
 }
+
 
 function toggleProbs(probKey) {
   if (openProbs.has(probKey)) openProbs.delete(probKey); else openProbs.add(probKey);
