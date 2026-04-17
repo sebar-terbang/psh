@@ -3,296 +3,386 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CP Habit Tracker</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<title>CP Habit Tracker — Juara!</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0a0a0f;
-    --surface: #111118;
-    --card: #13131f;
-    --border: #1e1e2e;
-    --accent: #00ff88;
-    --accent2: #ff6b35;
-    --accent3: #7c3aed;
-    --text: #e8e8f0;
-    --muted: #555570;
+    --bg: #0d0f14;
+    --surface: #13161e;
+    --card: #181c26;
+    --border: #232840;
+    --border-soft: #1e2235;
+    --accent: #22d97a;
+    --accent-glow: rgba(34,217,122,0.15);
+    --accent-dim: rgba(34,217,122,0.08);
+    --orange: #f97316;
+    --purple: #a855f7;
+    --blue: #38bdf8;
+    --yellow: #fbbf24;
+    --red: #f43f5e;
+    --text: #e2e8f0;
+    --text-soft: #94a3b8;
+    --muted: #475569;
+    --radius: 10px;
+    --radius-sm: 6px;
   }
+
   * { margin: 0; padding: 0; box-sizing: border-box; }
+
   body {
     background: var(--bg);
     color: var(--text);
-    font-family: 'Syne', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     min-height: 100vh;
-    padding: 2rem 1rem 4rem;
+    padding: 1.5rem 1rem 5rem;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(34,217,122,0.07) 0%, transparent 60%);
   }
-
-  .app { max-width: 760px; margin: 0 auto; }
 
   .app { max-width: 720px; margin: 0 auto; }
 
-
-  .header { margin-bottom: 2rem; }
-  .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.25rem; }
-  .logo { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; color: var(--accent); text-transform: uppercase; letter-spacing: 0.15em; }
-  .today-date { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; color: var(--muted); }
-  h1 { font-size: 1.75rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; }
-  h1 span { color: var(--accent); }
-
-
-  .tabs { display: flex; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
-  .tab {
-    font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem;
-    text-transform: uppercase; letter-spacing: 0.08em;
-    padding: 0.6rem 1.2rem; cursor: pointer; color: var(--muted);
-    border: none; border-bottom: 2px solid transparent; margin-bottom: -1px;
-    background: none; transition: all 0.15s;
+  /* ─── HEADER ─── */
+  .header { margin-bottom: 1.75rem; }
+  .header-top {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 0.75rem;
   }
-  .tab:hover { color: var(--text); }
-  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .logo {
+    font-family: 'Space Mono', monospace; font-size: 0.65rem;
+    color: var(--accent); text-transform: uppercase; letter-spacing: 0.2em;
+    display: flex; align-items: center; gap: 0.4rem;
+  }
+  .logo-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse-dot 2s ease-in-out infinite; }
+  @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(0.7)} }
+  .today-date { font-family: 'Space Mono', monospace; font-size: 0.65rem; color: var(--muted); }
+  h1 { font-size: clamp(1.6rem, 5vw, 2.1rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; }
+  h1 .highlight { color: var(--accent); }
+
+  /* ─── TABS ─── */
+  .tabs {
+    display: flex; margin-bottom: 1.5rem;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 4px; gap: 4px;
+  }
+  .tab {
+    flex: 1; font-family: 'Space Mono', monospace; font-size: 0.68rem;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    padding: 0.55rem 0.5rem; cursor: pointer; color: var(--muted);
+    border: none; border-radius: 7px;
+    background: none; transition: all 0.2s; font-weight: 400;
+  }
+  .tab:hover { color: var(--text); background: var(--card); }
+  .tab.active { color: var(--bg); background: var(--accent); font-weight: 700; }
 
   .panel { display: none; }
-  .panel.active { display: block; }
+  .panel.active { display: block; animation: fadeIn 0.2s ease; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
 
-  /* STREAK */
+  /* ─── STREAK BANNER ─── */
   .streak-banner {
     background: var(--card); border: 1px solid var(--border);
-    border-left: 3px solid var(--accent);
-    padding: 1rem 1.25rem;
+    border-radius: var(--radius);
+    padding: 1.1rem 1.25rem;
     display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 1.5rem; gap: 1rem; flex-wrap: wrap;
+    margin-bottom: 1.25rem; gap: 1rem; flex-wrap: wrap;
+    position: relative; overflow: hidden;
+  }
+  .streak-banner::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: linear-gradient(to bottom, var(--accent), rgba(34,217,122,0.2));
+    border-radius: 3px 0 0 3px;
   }
   .streak-main { display: flex; align-items: baseline; gap: 0.5rem; }
-  .streak-num { font-family: 'IBM Plex Mono', monospace; font-size: 2.5rem; font-weight: 700; color: var(--accent); line-height: 1; }
-  .streak-label { font-size: 0.85rem; color: var(--muted); }
-  .streak-stats { display: flex; gap: 1.5rem; }
+  .streak-num {
+    font-family: 'Space Mono', monospace; font-size: 2.8rem; font-weight: 700;
+    color: var(--accent); line-height: 1;
+    text-shadow: 0 0 30px rgba(34,217,122,0.4);
+  }
+  .streak-label { font-size: 0.82rem; color: var(--text-soft); }
+  .streak-stats { display: flex; gap: 1.5rem; flex-wrap: wrap; }
   .s-stat { text-align: center; }
-  .s-stat-num { font-family: 'IBM Plex Mono', monospace; font-size: 1.1rem; font-weight: 600; color: var(--text); display: block; }
-  .s-stat-label { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+  .s-stat-num {
+    font-family: 'Space Mono', monospace; font-size: 1.05rem; font-weight: 700;
+    color: var(--text); display: block;
+  }
+  .s-stat-label { font-size: 0.6rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 2px; display: block; }
 
-  /* CHECK-IN */
-  .checkin-card { background: var(--card); border: 1px solid var(--border); padding: 1.25rem; margin-bottom: 1.5rem; }
-  .checkin-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 0.75rem; }
+  /* ─── CHECKIN CARD ─── */
+  .checkin-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1.2rem;
+    margin-bottom: 1.25rem;
+  }
+  .checkin-label {
+    font-family: 'Space Mono', monospace; font-size: 0.62rem;
+    color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em;
+    margin-bottom: 0.9rem;
+  }
   .tasks { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
   .task {
     display: flex; align-items: center; gap: 0.75rem;
-    padding: 0.6rem 0.75rem; background: var(--surface);
-    border: 1px solid var(--border); cursor: pointer; transition: all 0.15s; user-select: none;
+    padding: 0.7rem 0.9rem; background: var(--surface);
+    border: 1px solid var(--border-soft); border-radius: var(--radius-sm);
+    cursor: pointer; transition: all 0.15s; user-select: none;
   }
-  .task:hover { border-color: var(--muted); }
-  .task.done { background: rgba(0,255,136,0.06); border-color: rgba(0,255,136,0.25); }
-  .task-box { width: 18px; height: 18px; border: 1.5px solid var(--muted); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.7rem; color: var(--accent); }
-  .task.done .task-box { border-color: var(--accent); background: rgba(0,255,136,0.15); }
+  .task:hover { border-color: var(--muted); background: #1a1f2e; }
+  .task.done { background: var(--accent-dim); border-color: rgba(34,217,122,0.2); }
+  .task-box {
+    width: 20px; height: 20px; border: 1.5px solid var(--muted);
+    border-radius: 5px; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; font-size: 0.65rem; color: var(--accent); transition: all 0.15s;
+  }
+  .task.done .task-box { border-color: var(--accent); background: var(--accent-glow); }
   .task-text { font-size: 0.85rem; font-weight: 600; flex: 1; transition: color 0.15s; }
   .task.done .task-text { color: var(--muted); text-decoration: line-through; }
-  .task-phase { font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem; color: var(--muted); padding: 2px 6px; border: 1px solid var(--border); white-space: nowrap; }
+  .task-phase {
+    font-family: 'Space Mono', monospace; font-size: 0.58rem; color: var(--muted);
+    padding: 3px 8px; border: 1px solid var(--border); border-radius: 4px; white-space: nowrap;
+  }
 
   .stamp-btn {
-    width: 100%; background: rgba(0,255,136,0.08); border: 1px solid rgba(0,255,136,0.3);
-    color: var(--accent); font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.8rem; font-weight: 600; padding: 0.8rem; cursor: pointer;
-    text-transform: uppercase; letter-spacing: 0.1em; transition: all 0.15s;
+    width: 100%; background: var(--accent-dim); border: 1px solid rgba(34,217,122,0.25);
+    color: var(--accent); font-family: 'Space Mono', monospace;
+    font-size: 0.78rem; font-weight: 700; padding: 0.9rem; cursor: pointer;
+    text-transform: uppercase; letter-spacing: 0.1em; transition: all 0.2s;
+    border-radius: var(--radius-sm);
   }
-  .stamp-btn:hover { background: rgba(0,255,136,0.15); border-color: var(--accent); }
-  .stamp-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .stamp-btn.stamped { background: rgba(0,255,136,0.12); border-color: var(--accent); }
+  .stamp-btn:hover { background: rgba(34,217,122,0.15); border-color: var(--accent); transform: translateY(-1px); box-shadow: 0 4px 20px rgba(34,217,122,0.15); }
+  .stamp-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none; }
+  .stamp-btn.stamped { background: rgba(34,217,122,0.1); border-color: rgba(34,217,122,0.4); }
 
-  /* CALENDAR */
-  .cal-section { margin-bottom: 1.5rem; }
-  .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
-  .cal-title { font-size: 1rem; font-weight: 700; }
-  .cal-nav { display: flex; gap: 0.5rem; }
-  .cal-nav button { background: var(--surface); border: 1px solid var(--border); color: var(--text); font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; padding: 0.3rem 0.6rem; cursor: pointer; }
-  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-  .cal-dow { text-align: center; font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem; color: var(--muted); text-transform: uppercase; padding: 0.3rem 0; }
-  .cal-day {
-    aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
-    font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; cursor: pointer;
-    border: 1px solid transparent; border-radius: 2px; background: var(--surface);
-    transition: all 0.15s; position: relative;
+  /* ─── NOTE ─── */
+  .note-section { margin-bottom: 1.25rem; }
+  .section-title {
+    font-size: 0.62rem; font-family: 'Space Mono', monospace;
+    color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 0.6rem;
   }
-  .cal-day:hover { border-color: var(--muted); }
-  .cal-day.empty { background: transparent; cursor: default; }
-  .cal-day.today { border-color: var(--muted); font-weight: 700; }
-  .cal-day.done { background: rgba(0,255,136,0.15); border-color: rgba(0,255,136,0.4); color: var(--accent); font-weight: 700; }
-  .cal-day.done::after { content: '✕'; position: absolute; font-size: 1.4rem; color: var(--accent); opacity: 0.6; }
-  .cal-day.done span { opacity: 0; }
-  .cal-day.future { opacity: 0.3; cursor: default; }
-
-  /* NOTE */
-  .note-section { margin-bottom: 1.5rem; }
-  .section-title { font-size: 0.65rem; font-family: 'IBM Plex Mono', monospace; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 0.75rem; }
-  .note-input { width: 100%; background: var(--card); border: 1px solid var(--border); color: var(--text); font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; padding: 0.75rem 1rem; resize: vertical; min-height: 70px; outline: none; }
-  .note-input:focus { border-color: var(--muted); }
+  .note-input {
+    width: 100%; background: var(--card); border: 1px solid var(--border);
+    color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.85rem; line-height: 1.6; padding: 0.85rem 1rem;
+    resize: vertical; min-height: 80px; outline: none;
+    border-radius: var(--radius-sm); transition: border-color 0.15s;
+  }
+  .note-input:focus { border-color: rgba(34,217,122,0.4); }
   .note-input::placeholder { color: var(--muted); }
 
-  /* KURIKULUM */
-  .phase-block { margin-bottom: 0.75rem; border: 1px solid var(--border); background: var(--card); overflow: hidden; }
+  /* ─── KURIKULUM ─── */
+  .phase-block {
+    margin-bottom: 0.6rem; border: 1px solid var(--border);
+    border-radius: var(--radius); background: var(--card); overflow: hidden;
+    transition: border-color 0.15s;
+  }
+  .phase-block.open { border-color: var(--border); }
   .phase-header-row {
     display: flex; align-items: center; gap: 0.85rem;
-    padding: 0.9rem 1.1rem; cursor: pointer; user-select: none; transition: background 0.15s;
+    padding: 0.95rem 1.1rem; cursor: pointer; user-select: none; transition: background 0.15s;
   }
-  .phase-header-row:hover { background: #1a1a2a; }
+  .phase-header-row:hover { background: rgba(255,255,255,0.03); }
+
   .phase-dot-sm {
-    width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+    width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
-    font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; font-weight: 700;
+    font-family: 'Space Mono', monospace; font-size: 0.65rem; font-weight: 700;
   }
-  .p0 .phase-dot-sm { background: rgba(0,255,136,0.15); border: 1px solid #00ff88; color: #00ff88; }
-  .p1 .phase-dot-sm { background: rgba(255,107,53,0.15); border: 1px solid #ff6b35; color: #ff6b35; }
-  .p2 .phase-dot-sm { background: rgba(124,58,237,0.15); border: 1px solid #7c3aed; color: #7c3aed; }
-  .p3 .phase-dot-sm { background: rgba(0,200,255,0.15); border: 1px solid #00c8ff; color: #00c8ff; }
-  .p4 .phase-dot-sm { background: rgba(255,200,0,0.15); border: 1px solid #ffc800; color: #ffc800; }
-  .p5 .phase-dot-sm { background: rgba(255,50,100,0.15); border: 1px solid #ff3264; color: #ff3264; }
+  .p0 .phase-dot-sm { background: rgba(34,217,122,0.12); border: 1px solid #22d97a; color: #22d97a; }
+  .p1 .phase-dot-sm { background: rgba(249,115,22,0.12); border: 1px solid #f97316; color: #f97316; }
+  .p2 .phase-dot-sm { background: rgba(168,85,247,0.12); border: 1px solid #a855f7; color: #a855f7; }
+  .p3 .phase-dot-sm { background: rgba(56,189,248,0.12); border: 1px solid #38bdf8; color: #38bdf8; }
+  .p4 .phase-dot-sm { background: rgba(251,191,36,0.12); border: 1px solid #fbbf24; color: #fbbf24; }
+  .p5 .phase-dot-sm { background: rgba(244,63,94,0.12); border: 1px solid #f43f5e; color: #f43f5e; }
 
   .phase-info { flex: 1; min-width: 0; }
-  .phase-info-name { font-size: 0.88rem; font-weight: 700; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .phase-bar-wrap { height: 3px; background: var(--border); border-radius: 2px; }
-  .phase-bar { height: 100%; border-radius: 2px; transition: width 0.4s; }
-  .p0 .phase-bar { background: #00ff88; }
-  .p1 .phase-bar { background: #ff6b35; }
-  .p2 .phase-bar { background: #7c3aed; }
-  .p3 .phase-bar { background: #00c8ff; }
-  .p4 .phase-bar { background: #ffc800; }
-  .p5 .phase-bar { background: #ff3264; }
+  .phase-info-name { font-size: 0.88rem; font-weight: 700; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .phase-bar-wrap { height: 3px; background: var(--border); border-radius: 99px; }
+  .phase-bar { height: 100%; border-radius: 99px; transition: width 0.5s ease; }
+  .p0 .phase-bar { background: #22d97a; }
+  .p1 .phase-bar { background: #f97316; }
+  .p2 .phase-bar { background: #a855f7; }
+  .p3 .phase-bar { background: #38bdf8; }
+  .p4 .phase-bar { background: #fbbf24; }
+  .p5 .phase-bar { background: #f43f5e; }
 
   .phase-right { display: flex; align-items: center; gap: 0.65rem; flex-shrink: 0; }
-  .phase-pct-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: var(--muted); }
-  .phase-duration-tag { font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem; padding: 2px 7px; border-radius: 2px; text-transform: uppercase; letter-spacing: 0.07em; }
-  .p0 .phase-duration-tag { background: rgba(0,255,136,0.1); color: #00ff88; }
-  .p1 .phase-duration-tag { background: rgba(255,107,53,0.1); color: #ff6b35; }
-  .p2 .phase-duration-tag { background: rgba(124,58,237,0.1); color: #7c3aed; }
-  .p3 .phase-duration-tag { background: rgba(0,200,255,0.1); color: #00c8ff; }
-  .p4 .phase-duration-tag { background: rgba(255,200,0,0.1); color: #ffc800; }
-  .p5 .phase-duration-tag { background: rgba(255,50,100,0.1); color: #ff3264; }
-  .phase-chevron { font-size: 0.65rem; color: var(--muted); transition: transform 0.2s; }
+  .phase-pct-label { font-family: 'Space Mono', monospace; font-size: 0.72rem; color: var(--muted); }
+  .phase-duration-tag {
+    font-family: 'Space Mono', monospace; font-size: 0.58rem; padding: 3px 8px;
+    border-radius: 4px; text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .p0 .phase-duration-tag { background: rgba(34,217,122,0.1); color: #22d97a; }
+  .p1 .phase-duration-tag { background: rgba(249,115,22,0.1); color: #f97316; }
+  .p2 .phase-duration-tag { background: rgba(168,85,247,0.1); color: #a855f7; }
+  .p3 .phase-duration-tag { background: rgba(56,189,248,0.1); color: #38bdf8; }
+  .p4 .phase-duration-tag { background: rgba(251,191,36,0.1); color: #fbbf24; }
+  .p5 .phase-duration-tag { background: rgba(244,63,94,0.1); color: #f43f5e; }
+  .phase-chevron { font-size: 0.6rem; color: var(--muted); transition: transform 0.2s; }
   .phase-block.open .phase-chevron { transform: rotate(90deg); }
 
-  .topic-list { display: none; padding: 0 1.1rem 1.1rem; border-top: 1px solid var(--border); }
+  .topic-list { display: none; padding: 0 1.1rem 1.1rem; border-top: 1px solid var(--border-soft); }
   .phase-block.open .topic-list { display: block; }
 
   .milestone-box {
-    margin: 0.9rem 0;
+    margin: 0.85rem 0;
     background: var(--surface); border-left: 2px solid;
-    padding: 0.6rem 0.85rem; font-size: 0.78rem; color: var(--muted);
+    padding: 0.65rem 0.9rem; font-size: 0.8rem; color: var(--text-soft);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
   }
-  .p0 .milestone-box { border-color: #00ff88; }
-  .p1 .milestone-box { border-color: #ff6b35; }
-  .p2 .milestone-box { border-color: #7c3aed; }
-  .p3 .milestone-box { border-color: #00c8ff; }
-  .p4 .milestone-box { border-color: #ffc800; }
-  .p5 .milestone-box { border-color: #ff3264; }
+  .p0 .milestone-box { border-color: #22d97a; }
+  .p1 .milestone-box { border-color: #f97316; }
+  .p2 .milestone-box { border-color: #a855f7; }
+  .p3 .milestone-box { border-color: #38bdf8; }
+  .p4 .milestone-box { border-color: #fbbf24; }
+  .p5 .milestone-box { border-color: #f43f5e; }
   .milestone-box strong { color: var(--text); }
 
-  .topics-checklist { display: flex; flex-direction: column; gap: 4px; }
+  .topics-checklist { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 4px; margin-top: 0.5rem; }
 
   /* TOPIC ITEM with problems */
-  .topic-item { border: 1px solid var(--border); background: var(--surface); }
-  .topic-item.has-problems { border-color: var(--border); }
+  .topic-item { border: 1px solid var(--border-soft); background: var(--surface); border-radius: var(--radius-sm); overflow: hidden; }
 
   .topic-row {
     display: flex; align-items: center; gap: 0.55rem;
-    padding: 0.55rem 0.65rem; cursor: pointer; user-select: none; transition: all 0.15s;
+    padding: 0.6rem 0.7rem; cursor: pointer; user-select: none; transition: all 0.15s;
   }
   .topic-row:hover { background: rgba(255,255,255,0.03); }
   .topic-check-box {
-    width: 13px; height: 13px; border: 1.5px solid var(--muted);
-    flex-shrink: 0;
+    width: 15px; height: 15px; border: 1.5px solid var(--muted);
+    border-radius: 3px; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
     font-size: 0.55rem; transition: all 0.15s;
   }
-  .topic-item.checked .topic-check-box { border-color: var(--accent); background: rgba(0,255,136,0.2); color: var(--accent); }
-  .topic-check-label { font-size: 0.77rem; line-height: 1.35; transition: color 0.15s; flex: 1; }
+  .topic-item.checked .topic-check-box { border-color: var(--accent); background: var(--accent-glow); color: var(--accent); }
+  .topic-check-label { font-size: 0.78rem; line-height: 1.35; transition: color 0.15s; flex: 1; }
   .topic-item.checked .topic-check-label { color: var(--muted); text-decoration: line-through; }
 
   .topic-problems-btn {
-    font-family: 'IBM Plex Mono', monospace; font-size: 0.58rem;
+    font-family: 'Space Mono', monospace; font-size: 0.57rem;
     background: none; border: 1px solid var(--border); color: var(--muted);
-    padding: 2px 7px; cursor: pointer; transition: all 0.15s; white-space: nowrap;
-    display: flex; align-items: center; gap: 4px;
+    padding: 2px 7px; border-radius: 4px; cursor: pointer; transition: all 0.15s; white-space: nowrap;
   }
   .topic-problems-btn:hover { border-color: var(--muted); color: var(--text); }
-  .topic-problems-btn.has-done { border-color: rgba(0,255,136,0.3); color: var(--accent); }
+  .topic-problems-btn.has-done { border-color: rgba(34,217,122,0.3); color: var(--accent); }
 
   /* PROBLEMS PANEL */
-  .problems-panel { display: none; border-top: 1px solid var(--border); padding: 0.6rem 0.65rem 0.75rem; }
+  .problems-panel { display: none; border-top: 1px solid var(--border-soft); padding: 0.65rem 0.7rem 0.75rem; }
   .topic-item.probs-open .problems-panel { display: block; }
-
-  .problems-header { font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem; }
+  .problems-header { font-family: 'Space Mono', monospace; font-size: 0.58rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem; }
 
   .problem-row {
     display: flex; align-items: center; gap: 0.6rem;
-    padding: 0.42rem 0.5rem; background: var(--card); border: 1px solid var(--border);
-    margin-bottom: 3px; cursor: pointer; transition: all 0.15s; user-select: none;
+    padding: 0.45rem 0.55rem; background: var(--card); border: 1px solid var(--border-soft);
+    border-radius: 4px; margin-bottom: 3px; cursor: pointer; transition: all 0.15s; user-select: none;
   }
   .problem-row:hover { border-color: var(--muted); }
-  .problem-row.solved { background: rgba(0,255,136,0.05); border-color: rgba(0,255,136,0.2); }
+  .problem-row.solved { background: var(--accent-dim); border-color: rgba(34,217,122,0.2); }
   .problem-check {
-    width: 12px; height: 12px; border: 1.5px solid var(--muted); flex-shrink: 0;
+    width: 13px; height: 13px; border: 1.5px solid var(--muted); border-radius: 3px; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center; font-size: 0.5rem;
     transition: all 0.15s;
   }
-  .problem-row.solved .problem-check { border-color: var(--accent); background: rgba(0,255,136,0.2); color: var(--accent); }
-  .problem-title { font-size: 0.75rem; flex: 1; transition: color 0.15s; }
+  .problem-row.solved .problem-check { border-color: var(--accent); background: var(--accent-glow); color: var(--accent); }
+  .problem-title { font-size: 0.76rem; flex: 1; transition: color 0.15s; }
   .problem-row.solved .problem-title { color: var(--muted); text-decoration: line-through; }
   .problem-rating {
-    font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem;
-    padding: 1px 5px; border-radius: 2px; white-space: nowrap; flex-shrink: 0;
+    font-family: 'Space Mono', monospace; font-size: 0.58rem;
+    padding: 1px 6px; border-radius: 3px; white-space: nowrap; flex-shrink: 0;
   }
-  .r-easy { background: rgba(0,255,136,0.1); color: #00ff88; border: 1px solid rgba(0,255,136,0.2); }
-  .r-med  { background: rgba(255,200,0,0.1); color: #ffc800; border: 1px solid rgba(255,200,0,0.2); }
-  .r-hard { background: rgba(255,107,53,0.1); color: #ff6b35; border: 1px solid rgba(255,107,53,0.2); }
-  .r-vhard{ background: rgba(255,50,100,0.1); color: #ff3264; border: 1px solid rgba(255,50,100,0.2); }
+  .r-easy  { background: rgba(34,217,122,0.1); color: #22d97a; border: 1px solid rgba(34,217,122,0.2); }
+  .r-med   { background: rgba(251,191,36,0.1); color: #fbbf24; border: 1px solid rgba(251,191,36,0.2); }
+  .r-hard  { background: rgba(249,115,22,0.1); color: #f97316; border: 1px solid rgba(249,115,22,0.2); }
+  .r-vhard { background: rgba(244,63,94,0.1); color: #f43f5e; border: 1px solid rgba(244,63,94,0.2); }
 
   .problem-link {
-    font-family: 'IBM Plex Mono', monospace; font-size: 0.58rem; color: var(--muted);
-    text-decoration: none; padding: 2px 5px; border: 1px solid var(--border);
-    transition: all 0.15s; flex-shrink: 0;
+    font-family: 'Space Mono', monospace; font-size: 0.56rem; color: var(--muted);
+    text-decoration: none; padding: 2px 6px; border: 1px solid var(--border);
+    border-radius: 3px; transition: all 0.15s; flex-shrink: 0;
   }
   .problem-link:hover { color: var(--accent); border-color: var(--accent); }
 
-  .problems-progress {
-    display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;
-  }
-  .problems-progress-bar { flex: 1; height: 2px; background: var(--border); border-radius: 2px; }
-  .problems-progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.3s; }
-  .problems-progress-text { font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem; color: var(--muted); white-space: nowrap; }
-  .topics-checklist { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 4px; }
-  .topic-check {
-    display: flex; align-items: flex-start; gap: 0.55rem;
-    padding: 0.48rem 0.65rem; background: var(--surface);
-    border: 1px solid var(--border); cursor: pointer;
-    transition: all 0.15s; user-select: none;
-  }
-  .topic-check:hover { border-color: var(--muted); }
-  .topic-check.checked { background: rgba(0,255,136,0.05); border-color: rgba(0,255,136,0.2); }
-  .topic-check-box {
-    width: 13px; height: 13px; border: 1.5px solid var(--muted);
-    flex-shrink: 0; margin-top: 2px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.55rem; transition: all 0.15s;
-  }
-  .topic-check.checked .topic-check-box { border-color: var(--accent); background: rgba(0,255,136,0.2); color: var(--accent); }
-  .topic-check-label { font-size: 0.77rem; line-height: 1.35; transition: color 0.15s; }
-  .topic-check.checked .topic-check-label { color: var(--muted); text-decoration: line-through; }
+  .problems-progress { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
+  .problems-progress-bar { flex: 1; height: 2px; background: var(--border); border-radius: 99px; }
+  .problems-progress-fill { height: 100%; background: var(--accent); border-radius: 99px; transition: width 0.3s; }
+  .problems-progress-text { font-family: 'Space Mono', monospace; font-size: 0.58rem; color: var(--muted); white-space: nowrap; }
 
+  /* ─── KALENDER ─── */
+  .cal-section {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1.25rem;
+  }
+  .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.1rem; }
+  .cal-title { font-size: 1rem; font-weight: 700; }
+  .cal-nav { display: flex; gap: 0.5rem; }
+  .cal-nav button {
+    background: var(--surface); border: 1px solid var(--border); color: var(--text);
+    font-family: 'Space Mono', monospace; font-size: 0.75rem; padding: 0.35rem 0.7rem;
+    cursor: pointer; border-radius: var(--radius-sm); transition: all 0.15s;
+  }
+  .cal-nav button:hover { border-color: var(--muted); background: #1a1f2e; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+  .cal-dow { text-align: center; font-family: 'Space Mono', monospace; font-size: 0.58rem; color: var(--muted); text-transform: uppercase; padding: 0.3rem 0; }
+  .cal-day {
+    aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Mono', monospace; font-size: 0.72rem; cursor: pointer;
+    border: 1px solid transparent; border-radius: var(--radius-sm); background: var(--surface);
+    transition: all 0.15s; position: relative; overflow: hidden;
+  }
+  .cal-day:hover { border-color: var(--muted); background: #1a1f2e; }
+  .cal-day.empty { background: transparent; cursor: default; border-color: transparent !important; }
+  .cal-day.today { border-color: rgba(34,217,122,0.4); font-weight: 700; color: var(--accent); }
+  .cal-day.done { background: var(--accent-glow); border-color: rgba(34,217,122,0.35); color: var(--accent); font-weight: 700; }
+  .cal-day.done::after { content: '✓'; position: absolute; font-size: 1.2rem; color: var(--accent); opacity: 0.5; }
+  .cal-day.done span { opacity: 0; }
+  .cal-day.future { opacity: 0.25; cursor: default; }
 
-  .footer-tip { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); text-align: center; padding: 1.5rem 0 0; border-top: 1px solid var(--border); margin-top: 1rem; }
+  /* ─── KALENDER LEGEND + STATS ─── */
+  .cal-legend { display: flex; gap: 1.2rem; margin-top: 1rem; flex-wrap: wrap; }
+  .cal-legend-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.72rem; color: var(--muted); }
+  .cal-legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+  .cal-legend-dot.done { background: var(--accent-glow); border: 1px solid rgba(34,217,122,0.35); }
+  .cal-legend-dot.today { border: 1px solid rgba(34,217,122,0.4); }
 
+  .heatmap-summary {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+  .hm-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 0.85rem 1rem; text-align: center;
+  }
+  .hm-num { font-family: 'Space Mono', monospace; font-size: 1.5rem; font-weight: 700; color: var(--text); display: block; }
+  .hm-label { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; display: block; }
+
+  /* ─── FOOTER ─── */
+  .footer-tip {
+    font-family: 'Space Mono', monospace; font-size: 0.65rem; color: var(--muted);
+    text-align: center; padding: 1.5rem 0 0; border-top: 1px solid var(--border);
+    margin-top: 1rem; line-height: 1.6;
+  }
+
+  /* ─── TOAST ─── */
   .toast {
-    position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px);
-    background: var(--accent); color: #0a0a0f;
-    font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; font-weight: 700;
-    padding: 0.6rem 1.5rem; transition: transform 0.3s ease; z-index: 999;
+    position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(100px);
+    background: var(--accent); color: #0a0f0d;
+    font-family: 'Space Mono', monospace; font-size: 0.73rem; font-weight: 700;
+    padding: 0.65rem 1.5rem; transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); z-index: 999;
+    border-radius: var(--radius-sm); white-space: nowrap;
+    box-shadow: 0 8px 32px rgba(34,217,122,0.3);
   }
   .toast.show { transform: translateX(-50%) translateY(0); }
 
-  @media (max-width: 500px) {
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 520px) {
     .streak-stats { gap: 1rem; }
     .phase-duration-tag { display: none; }
     .problem-link { display: none; }
-
     .topics-checklist { grid-template-columns: 1fr; }
-    .phase-duration-tag { display: none; }
+    .heatmap-summary { grid-template-columns: repeat(3, 1fr); }
+    .hm-num { font-size: 1.2rem; }
+    h1 { font-size: 1.55rem; }
+    .cal-day { font-size: 0.65rem; }
+  }
+  @media (max-width: 360px) {
+    .heatmap-summary { grid-template-columns: 1fr 1fr; }
   }
 </style>
 </head>
@@ -301,10 +391,10 @@
 
   <div class="header">
     <div class="header-top">
-      <span class="logo">// CP Habit Tracker</span>
+      <span class="logo"><span class="logo-dot"></span>CP Habit Tracker</span>
       <span class="today-date" id="todayDate"></span>
     </div>
-    <h1>Jangan Putus<br><span>Rantainya.</span></h1>
+    <h1>Jangan Putus<br><span class="highlight">Rantainya.</span></h1>
   </div>
 
   <div class="tabs">
@@ -315,24 +405,36 @@
 
   <!-- TAB: HARIAN -->
   <div class="panel active" id="panel-daily">
+
     <div class="streak-banner">
       <div class="streak-main">
         <span class="streak-num" id="streakNum">0</span>
         <span class="streak-label">hari streak 🔥</span>
       </div>
       <div class="streak-stats">
-        <div class="s-stat"><span class="s-stat-num" id="totalDays">0</span><span class="s-stat-label">Total Hari</span></div>
-        <div class="s-stat"><span class="s-stat-num" id="bestStreak">0</span><span class="s-stat-label">Best Streak</span></div>
-        <div class="s-stat"><span class="s-stat-num" id="thisMonth">0</span><span class="s-stat-label">Bulan Ini</span></div>
-        <div class="s-stat"><span class="s-stat-num" id="totalSolved">0</span><span class="s-stat-label">Soal Solved</span></div>
-
+        <div class="s-stat">
+          <span class="s-stat-num" id="totalDays">0</span>
+          <span class="s-stat-label">Total Hari</span>
+        </div>
+        <div class="s-stat">
+          <span class="s-stat-num" id="bestStreak">0</span>
+          <span class="s-stat-label">Best Streak</span>
+        </div>
+        <div class="s-stat">
+          <span class="s-stat-num" id="thisMonth">0</span>
+          <span class="s-stat-label">Bulan Ini</span>
+        </div>
+        <div class="s-stat">
+          <span class="s-stat-num" id="totalSolved">0</span>
+          <span class="s-stat-label">Soal Solved</span>
+        </div>
       </div>
     </div>
 
     <div class="checkin-card">
       <div class="checkin-label">// Hari ini — apa yang udah dikerjain?</div>
       <div class="tasks" id="taskList"></div>
-      <button class="stamp-btn" id="stampBtn" onclick="stampToday()">✕ &nbsp; TANDAI HARI INI SELESAI</button>
+      <button class="stamp-btn" id="stampBtn" onclick="stampToday()">✓ &nbsp; TANDAI HARI INI SELESAI</button>
     </div>
 
     <div class="note-section">
@@ -348,6 +450,21 @@
 
   <!-- TAB: KALENDER -->
   <div class="panel" id="panel-kalender">
+    <div class="heatmap-summary">
+      <div class="hm-card">
+        <span class="hm-num" id="calTotalDays">0</span>
+        <span class="hm-label">Total Hari</span>
+      </div>
+      <div class="hm-card">
+        <span class="hm-num" id="calThisMonth">0</span>
+        <span class="hm-label">Bulan Ini</span>
+      </div>
+      <div class="hm-card">
+        <span class="hm-num" id="calConsistency">0%</span>
+        <span class="hm-label">Konsistensi</span>
+      </div>
+    </div>
+
     <div class="cal-section">
       <div class="cal-header">
         <span class="cal-title" id="calMonthTitle"></span>
@@ -357,6 +474,10 @@
         </div>
       </div>
       <div class="cal-grid" id="calGrid"></div>
+      <div class="cal-legend">
+        <div class="cal-legend-item"><div class="cal-legend-dot done"></div> Selesai</div>
+        <div class="cal-legend-item"><div class="cal-legend-dot today"></div> Hari ini</div>
+      </div>
     </div>
   </div>
 
@@ -365,194 +486,189 @@
 <div class="toast" id="toast"></div>
 
 <script>
-
-// ── PROBLEM DATA per topic (phase 4 = index 3, phase 5 = index 4) ─────────────
+// ── PROBLEM DATA per topic ────────────────────────────────────────────────────
 const TOPIC_PROBLEMS = {
-  // ── FASE 4: DSA Inti ──────────────────────────────────────────────────────
-  "3_0": [ // Big-O
+  "3_0": [
     { id:"p3_0_0", title:"Watermelon", rating:800, rc:"r-easy", url:"https://codeforces.com/problemset/problem/1/A" },
     { id:"p3_0_1", title:"Nearly Lucky Number", rating:1200, rc:"r-easy", url:"https://codeforces.com/problemset/problem/42/C" },
     { id:"p3_0_2", title:"Bit++", rating:800, rc:"r-easy", url:"https://codeforces.com/problemset/problem/282/A" },
   ],
-  "3_1": [ // Linked List
+  "3_1": [
     { id:"p3_1_0", title:"Queue at School", rating:1300, rc:"r-easy", url:"https://codeforces.com/problemset/problem/266/B" },
     { id:"p3_1_1", title:"Lorry", rating:1600, rc:"r-med", url:"https://codeforces.com/problemset/problem/3/B" },
   ],
-  "3_2": [ // Stack & Queue
+  "3_2": [
     { id:"p3_2_0", title:"Stack of Presents", rating:1100, rc:"r-easy", url:"https://codeforces.com/problemset/problem/1748/B" },
     { id:"p3_2_1", title:"Bracket Sequence", rating:1600, rc:"r-med", url:"https://codeforces.com/problemset/problem/4/C" },
     { id:"p3_2_2", title:"Maximum Xor Secondary", rating:1800, rc:"r-med", url:"https://codeforces.com/problemset/problem/281/D" },
     { id:"p3_2_3", title:"Nearest Smaller", rating:1700, rc:"r-med", url:"https://codeforces.com/problemset/problem/797/C" },
   ],
-  "3_3": [ // Binary Search
+  "3_3": [
     { id:"p3_3_0", title:"Cellular Network", rating:1600, rc:"r-med", url:"https://codeforces.com/problemset/problem/702/C" },
     { id:"p3_3_1", title:"Ropes", rating:1600, rc:"r-med", url:"https://codeforces.com/problemset/problem/313/B" },
     { id:"p3_3_2", title:"Gym Leader", rating:1700, rc:"r-med", url:"https://codeforces.com/problemset/problem/1468/J" },
     { id:"p3_3_3", title:"The Meeting Place Cannot Be Changed", rating:1700, rc:"r-med", url:"https://codeforces.com/problemset/problem/199/B" },
     { id:"p3_3_4", title:"Acquiring Skills", rating:1800, rc:"r-med", url:"https://codeforces.com/problemset/problem/1033/D" },
   ],
-  "3_4": [ // Two Pointers
+  "3_4": [
     { id:"p3_4_0", title:"Longest k-Good Segment", rating:1500, rc:"r-med", url:"https://codeforces.com/problemset/problem/616/D" },
     { id:"p3_4_1", title:"Vasya and String", rating:1700, rc:"r-med", url:"https://codeforces.com/problemset/problem/816/C" },
     { id:"p3_4_2", title:"Good Subarrays", rating:1600, rc:"r-med", url:"https://codeforces.com/problemset/problem/1398/C" },
     { id:"p3_4_3", title:"Array and Segments", rating:2000, rc:"r-hard", url:"https://codeforces.com/problemset/problem/1108/D" },
   ],
-  "3_5": [ // Prefix Sum
+  "3_5": [
     { id:"p3_5_0", title:"Little Girl and Maximum Sum", rating:1500, rc:"r-med", url:"https://codeforces.com/problemset/problem/276/C" },
     { id:"p3_5_1", title:"Ants", rating:1600, rc:"r-med", url:"https://codeforces.com/problemset/problem/704/B" },
     { id:"p3_5_2", title:"Covered Points Count", rating:1900, rc:"r-hard", url:"https://codeforces.com/problemset/problem/1066/D" },
     { id:"p3_5_3", title:"Nastia and a Trim Repairing", rating:1900, rc:"r-hard", url:"https://codeforces.com/problemset/problem/1521/D" },
   ],
-  "3_6": [ // Sorting
+  "3_6": [
     { id:"p3_6_0", title:"Woodcutters", rating:1600, rc:"r-med", url:"https://codeforces.com/problemset/problem/545/C" },
     { id:"p3_6_1", title:"Permutation Counting", rating:1700, rc:"r-med", url:"https://codeforces.com/problemset/problem/1526/C" },
     { id:"p3_6_2", title:"Inversions", rating:1800, rc:"r-med", url:"https://codeforces.com/problemset/problem/459/D" },
     { id:"p3_6_3", title:"Ehab and Bipartiteness", rating:1900, rc:"r-hard", url:"https://codeforces.com/problemset/problem/901/C" },
   ],
-  "3_7": [ // Recursion & Backtracking
+  "3_7": [
     { id:"p3_7_0", title:"Puzzles", rating:1600, rc:"r-med", url:"https://codeforces.com/problemset/problem/697/C" },
     { id:"p3_7_1", title:"Fractal Expansion", rating:1700, rc:"r-med", url:"https://codeforces.com/problemset/problem/598/D" },
     { id:"p3_7_2", title:"Maze", rating:1900, rc:"r-hard", url:"https://codeforces.com/problemset/problem/377/A" },
     { id:"p3_7_3", title:"Restore Permutation", rating:2000, rc:"r-hard", url:"https://codeforces.com/problemset/problem/1171/E" },
   ],
-  "3_8": [ // Hash Map
+  "3_8": [
     { id:"p3_8_0", title:"Good Subarrays", rating:1600, rc:"r-med", url:"https://codeforces.com/problemset/problem/1398/C" },
     { id:"p3_8_1", title:"Anagram", rating:1700, rc:"r-med", url:"https://codeforces.com/problemset/problem/1/B" },
     { id:"p3_8_2", title:"Ehab and Another Construction", rating:1700, rc:"r-med", url:"https://codeforces.com/problemset/problem/1506/D" },
     { id:"p3_8_3", title:"Array Stabilization", rating:1800, rc:"r-med", url:"https://codeforces.com/problemset/problem/1535/D" },
   ],
-  "3_9": [ // Binary Tree & BST
+  "3_9": [
     { id:"p3_9_0", title:"Ciel and the Robot", rating:1700, rc:"r-med", url:"https://codeforces.com/problemset/problem/704/C" },
     { id:"p3_9_1", title:"Xenia and Binary Tree", rating:2400, rc:"r-vhard", url:"https://codeforces.com/problemset/problem/342/E" },
     { id:"p3_9_2", title:"New Year Tree", rating:2400, rc:"r-vhard", url:"https://codeforces.com/problemset/problem/620/E" },
   ],
-  "3_10": [ // DFS & BFS
+  "3_10": [
     { id:"p3_10_0", title:"Ice Cave", rating:1400, rc:"r-easy", url:"https://codeforces.com/problemset/problem/540/C" },
     { id:"p3_10_1", title:"Biridian Forest", rating:1500, rc:"r-med", url:"https://codeforces.com/problemset/problem/1063/B" },
     { id:"p3_10_2", title:"Police Stations", rating:1700, rc:"r-med", url:"https://codeforces.com/problemset/problem/796/D" },
     { id:"p3_10_3", title:"Distance in Tree", rating:1900, rc:"r-hard", url:"https://codeforces.com/problemset/problem/161/D" },
     { id:"p3_10_4", title:"Labyrinth", rating:1900, rc:"r-hard", url:"https://codeforces.com/problemset/problem/1063/B" },
   ],
-  "3_11": [ // Graph
+  "3_11": [
     { id:"p3_11_0", title:"XOXO Bipartite", rating:1700, rc:"r-med", url:"https://codeforces.com/problemset/problem/616/C" },
     { id:"p3_11_1", title:"Fire Again", rating:1700, rc:"r-med", url:"https://codeforces.com/problemset/problem/540/D" },
     { id:"p3_11_2", title:"Dijkstra?", rating:2000, rc:"r-hard", url:"https://codeforces.com/problemset/problem/20/C" },
   ],
-  "3_12": [ // Heap & Priority Queue
+  "3_12": [
     { id:"p3_12_0", title:"Buying a TV Set", rating:1300, rc:"r-easy", url:"https://codeforces.com/problemset/problem/1472/B" },
     { id:"p3_12_1", title:"Codeforces Rounds", rating:1700, rc:"r-med", url:"https://codeforces.com/problemset/problem/1174/D" },
     { id:"p3_12_2", title:"K-th Largest", rating:1800, rc:"r-med", url:"https://codeforces.com/problemset/problem/1601/C" },
   ],
-  "3_13": [ // Greedy
+  "3_13": [
     { id:"p3_13_0", title:"Woodcutters", rating:1600, rc:"r-med", url:"https://codeforces.com/problemset/problem/545/C" },
     { id:"p3_13_1", title:"Maximum Median", rating:1900, rc:"r-hard", url:"https://codeforces.com/problemset/problem/1201/C" },
     { id:"p3_13_2", title:"Scheduling", rating:2100, rc:"r-hard", url:"https://codeforces.com/problemset/problem/1534/E" },
     { id:"p3_13_3", title:"Choosing Subsequence", rating:2100, rc:"r-hard", url:"https://codeforces.com/problemset/problem/1208/F" },
   ],
-  "3_14": [ // DP Memoization
+  "3_14": [
     { id:"p3_14_0", title:"Buy and Sell", rating:1700, rc:"r-med", url:"https://codeforces.com/problemset/problem/1858/D" },
     { id:"p3_14_1", title:"Divisors Game", rating:1700, rc:"r-med", url:"https://codeforces.com/problemset/problem/1304/C" },
     { id:"p3_14_2", title:"Petya and Sequences", rating:1800, rc:"r-med", url:"https://codeforces.com/problemset/problem/1382/C" },
     { id:"p3_14_3", title:"Tree Paths", rating:2100, rc:"r-hard", url:"https://codeforces.com/problemset/problem/1163/D" },
   ],
-  "3_15": [ // DP Klasik
+  "3_15": [
     { id:"p3_15_0", title:"Increasing Subsequence", rating:1700, rc:"r-med", url:"https://codeforces.com/problemset/problem/2/B" },
     { id:"p3_15_1", title:"LIS Counting", rating:1700, rc:"r-med", url:"https://codeforces.com/problemset/problem/269/B" },
     { id:"p3_15_2", title:"Knapsack 1", rating:1800, rc:"r-med", url:"https://codeforces.com/problemset/problem/19/B" },
     { id:"p3_15_3", title:"Turtle & Piggy — LCS", rating:2000, rc:"r-hard", url:"https://codeforces.com/problemset/problem/1996/D" },
     { id:"p3_15_4", title:"Knapsack for All Subsets", rating:2200, rc:"r-vhard", url:"https://codeforces.com/problemset/problem/1856/D" },
   ],
-
-  // ── FASE 5: Algoritma Lanjutan ─────────────────────────────────────────────
-  "4_0": [ // Segment Tree
+  "4_0": [
     { id:"p4_0_0", title:"Pashmak and Parmida", rating:2000, rc:"r-hard", url:"https://codeforces.com/problemset/problem/459/E" },
     { id:"p4_0_1", title:"Sereja and Brackets", rating:2100, rc:"r-hard", url:"https://codeforces.com/problemset/problem/380/C" },
     { id:"p4_0_2", title:"Nested Segments", rating:2200, rc:"r-vhard", url:"https://codeforces.com/problemset/problem/380/E" },
     { id:"p4_0_3", title:"Powerful Array", rating:2200, rc:"r-vhard", url:"https://codeforces.com/problemset/problem/86/D" },
   ],
-  "4_1": [ // Fenwick Tree BIT
+  "4_1": [
     { id:"p4_1_0", title:"Inversions", rating:1800, rc:"r-med", url:"https://codeforces.com/problemset/problem/459/D" },
     { id:"p4_1_1", title:"Pashmak and Parmida", rating:2000, rc:"r-hard", url:"https://codeforces.com/problemset/problem/459/E" },
     { id:"p4_1_2", title:"Array Partition", rating:2000, rc:"r-hard", url:"https://codeforces.com/problemset/problem/1473/E" },
     { id:"p4_1_3", title:"Nested Segments", rating:2200, rc:"r-vhard", url:"https://codeforces.com/problemset/problem/380/E" },
   ],
-  "4_2": [ // Sparse Table
+  "4_2": [
     { id:"p4_2_0", title:"Maximum Sum of Digits", rating:1700, rc:"r-med", url:"https://codeforces.com/problemset/problem/1060/C" },
     { id:"p4_2_1", title:"LCA + RMQ", rating:2000, rc:"r-hard", url:"https://codeforces.com/problemset/problem/191/C" },
     { id:"p4_2_2", title:"Circular RMQ", rating:2200, rc:"r-vhard", url:"https://codeforces.com/problemset/problem/52/C" },
   ],
-  "4_3": [ // DSU
+  "4_3": [
     { id:"p4_3_0", title:"Roads not only in Berland", rating:1700, rc:"r-med", url:"https://codeforces.com/problemset/problem/466/C" },
     { id:"p4_3_1", title:"Arpa and a game with Mojtaba", rating:2000, rc:"r-hard", url:"https://codeforces.com/problemset/problem/850/C" },
     { id:"p4_3_2", title:"Forests", rating:2200, rc:"r-vhard", url:"https://codeforces.com/problemset/problem/732/F" },
     { id:"p4_3_3", title:"The League of Sequencers", rating:2200, rc:"r-vhard", url:"https://codeforces.com/problemset/problem/1574/E" },
   ],
-  "4_4": [ // Dijkstra / Bellman-Ford
+  "4_4": [
     { id:"p4_4_0", title:"Dijkstra?", rating:2000, rc:"r-hard", url:"https://codeforces.com/problemset/problem/20/C" },
     { id:"p4_4_1", title:"SSSP", rating:2000, rc:"r-hard", url:"https://codeforces.com/problemset/problem/1547/F" },
     { id:"p4_4_2", title:"Lunar New Year", rating:2100, rc:"r-hard", url:"https://codeforces.com/problemset/problem/1106/D" },
     { id:"p4_4_3", title:"Negative Cycle", rating:2100, rc:"r-hard", url:"https://codeforces.com/problemset/problem/1326/F" },
   ],
-  "4_5": [ // Floyd-Warshall
+  "4_5": [
     { id:"p4_5_0", title:"Greg and Graph", rating:1900, rc:"r-hard", url:"https://codeforces.com/problemset/problem/295/B" },
     { id:"p4_5_1", title:"Arbitrage", rating:1900, rc:"r-hard", url:"https://codeforces.com/problemset/problem/499/E" },
     { id:"p4_5_2", title:"Tourism", rating:2400, rc:"r-vhard", url:"https://codeforces.com/problemset/problem/1184/E" },
   ],
-  "4_6": [ // MST
+  "4_6": [
     { id:"p4_6_0", title:"Minimum Spanning Tree", rating:2000, rc:"r-hard", url:"https://codeforces.com/problemset/problem/1208/F" },
     { id:"p4_6_1", title:"Edges in MST", rating:2300, rc:"r-vhard", url:"https://codeforces.com/problemset/problem/632/E" },
     { id:"p4_6_2", title:"Tourist", rating:2400, rc:"r-vhard", url:"https://codeforces.com/problemset/problem/660/F" },
   ],
-  "4_7": [ // Topological Sort
+  "4_7": [
     { id:"p4_7_0", title:"Fox and Names", rating:1700, rc:"r-med", url:"https://codeforces.com/problemset/problem/510/C" },
     { id:"p4_7_1", title:"Longest Path in DAG", rating:1900, rc:"r-hard", url:"https://codeforces.com/problemset/problem/774/D" },
     { id:"p4_7_2", title:"Reachability from Capital", rating:2100, rc:"r-hard", url:"https://codeforces.com/problemset/problem/999/E" },
   ],
-  "4_8": [ // SCC
+  "4_8": [
     { id:"p4_8_0", title:"Checkposts", rating:1900, rc:"r-hard", url:"https://codeforces.com/problemset/problem/427/C" },
     { id:"p4_8_1", title:"Reachability from Capital", rating:2100, rc:"r-hard", url:"https://codeforces.com/problemset/problem/999/E" },
     { id:"p4_8_2", title:"Tourist", rating:2400, rc:"r-vhard", url:"https://codeforces.com/problemset/problem/660/F" },
   ],
-  "4_9": [ // DP on Trees
+  "4_9": [
     { id:"p4_9_0", title:"Distance in Tree", rating:1900, rc:"r-hard", url:"https://codeforces.com/problemset/problem/161/D" },
     { id:"p4_9_1", title:"Picking Mushrooms", rating:2100, rc:"r-hard", url:"https://codeforces.com/problemset/problem/1440/E" },
     { id:"p4_9_2", title:"New Year Tree", rating:2400, rc:"r-vhard", url:"https://codeforces.com/problemset/problem/620/E" },
   ],
-  "4_10": [ // Bitmask DP
+  "4_10": [
     { id:"p4_10_0", title:"You Are Given a WASD String", rating:2100, rc:"r-hard", url:"https://codeforces.com/problemset/problem/1776/L" },
     { id:"p4_10_1", title:"Kefa and Dishes", rating:2200, rc:"r-vhard", url:"https://codeforces.com/problemset/problem/580/D" },
     { id:"p4_10_2", title:"Transportation (TSP)", rating:2200, rc:"r-vhard", url:"https://codeforces.com/problemset/problem/8/C" },
   ],
-  "4_11": [ // Number Theory
+  "4_11": [
     { id:"p4_11_0", title:"Interesting Function", rating:1700, rc:"r-med", url:"https://codeforces.com/problemset/problem/1538/C" },
     { id:"p4_11_1", title:"Almost All Divisors", rating:1700, rc:"r-med", url:"https://codeforces.com/problemset/problem/26/A" },
     { id:"p4_11_2", title:"GCD and LCM", rating:1800, rc:"r-med", url:"https://codeforces.com/problemset/problem/1459/B" },
     { id:"p4_11_3", title:"Power Tower", rating:2100, rc:"r-hard", url:"https://codeforces.com/problemset/problem/906/D" },
   ],
-  "4_12": [ // Sieve
+  "4_12": [
     { id:"p4_12_0", title:"Almost Prime", rating:1400, rc:"r-easy", url:"https://codeforces.com/problemset/problem/26/B" },
     { id:"p4_12_1", title:"Sherlock and Divisors", rating:1600, rc:"r-med", url:"https://codeforces.com/problemset/problem/776/B" },
     { id:"p4_12_2", title:"Vasya and Beautiful Arrays", rating:1900, rc:"r-hard", url:"https://codeforces.com/problemset/problem/1930/C" },
     { id:"p4_12_3", title:"Primes Without Zeros", rating:2100, rc:"r-hard", url:"https://codeforces.com/problemset/problem/1104/D" },
   ],
-  "4_13": [ // Binary Lifting LCA
+  "4_13": [
     { id:"p4_13_0", title:"Picking Mushrooms", rating:2100, rc:"r-hard", url:"https://codeforces.com/problemset/problem/1440/E" },
     { id:"p4_13_1", title:"Distance Queries", rating:2200, rc:"r-vhard", url:"https://codeforces.com/problemset/problem/190/E" },
     { id:"p4_13_2", title:"Xenia and Tree", rating:2400, rc:"r-vhard", url:"https://codeforces.com/problemset/problem/342/E" },
   ],
-  "4_14": [ // Meet in the Middle
+  "4_14": [
     { id:"p4_14_0", title:"Knapsack 2", rating:2200, rc:"r-vhard", url:"https://codeforces.com/problemset/problem/19/C" },
     { id:"p4_14_1", title:"8 Pieces", rating:2200, rc:"r-vhard", url:"https://codeforces.com/problemset/problem/1017/E" },
     { id:"p4_14_2", title:"Four Divisors", rating:2200, rc:"r-vhard", url:"https://codeforces.com/problemset/problem/1538/E" },
   ],
-  "4_15": [ // KMP Z-function
+  "4_15": [
     { id:"p4_15_0", title:"Prefixes and Suffixes", rating:1900, rc:"r-hard", url:"https://codeforces.com/problemset/problem/432/D" },
     { id:"p4_15_1", title:"Password", rating:2000, rc:"r-hard", url:"https://codeforces.com/problemset/problem/126/E" },
     { id:"p4_15_2", title:"Minimal String", rating:2200, rc:"r-vhard", url:"https://codeforces.com/problemset/problem/87/D" },
     { id:"p4_15_3", title:"Refactoring", rating:2300, rc:"r-vhard", url:"https://codeforces.com/problemset/problem/1063/F" },
   ],
 };
-
 
 const PHASES = [
   {
@@ -578,7 +694,7 @@ const PHASES = [
   {
     name: "Algoritma Lanjutan & CP Techniques", duration: "3–4 Bulan",
     milestone: "Bisa solve Codeforces Div.2 C & D secara konsisten. Rating mencapai 1600–1800.",
-    topics: ["Segment Tree","Fenwick Tree (BIT)","Sparse Table & RMQ","Disjoint Set Union (DSU)","Shortest Path: Dijkstra, Bellman-Ford","Floyd-Warshall","Minimum Spanning Tree (Kruskal, Prim)","Topological Sort","SCC (Strongly Connected Components)","DP on Trees","Bitmask DP","Number Theory (modular arith, GCD)","Sieve of Eratosthenes","Binary Lifting / LCA","Meet in the Middle","String: KMP, Z-function"]
+    topics: ["Segment Tree (range query & update)","Fenwick Tree / BIT","Sparse Table & RMQ","DSU / Union-Find","Dijkstra & Bellman-Ford","Floyd-Warshall","Minimum Spanning Tree","Topological Sort","SCC (Kosaraju/Tarjan)","DP on Trees","Bitmask DP","Number Theory (mod, GCD, sieve)","Sieve of Eratosthenes","Binary Lifting & LCA","Meet in the Middle","KMP & Z-function"]
   },
   {
     name: "Kompetisi & Spesialisasi", duration: "Ongoing",
@@ -608,7 +724,6 @@ const TIPS = [
 function load(k, def) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : def; } catch { return def; } }
 function save(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
 
-
 let doneDays    = new Set(load('cp_done_days', []));
 let taskState   = load('cp_today_tasks', {});
 let topicsDone  = load('cp_topics', {});
@@ -617,9 +732,9 @@ let notes       = load('cp_notes', {});
 let openPhases  = new Set(load('cp_open_phases', []));
 let openProbs   = new Set(load('cp_open_probs', []));
 
-
-const todayStr = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })();
-let calYear = new Date().getFullYear(), calMonth = new Date().getMonth();
+const now = new Date();
+const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+let calYear = now.getFullYear(), calMonth = now.getMonth();
 
 function calcStreak() {
   const sorted = [...doneDays].sort();
@@ -635,22 +750,19 @@ function calcStreak() {
 }
 
 function thisMonthCount() {
-  const prefix = `${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}`;
+  const prefix = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
   return [...doneDays].filter(d => d.startsWith(prefix)).length;
 }
-
 
 function totalSolvedCount() {
   return Object.values(problemsDone).filter(Boolean).length;
 }
-
 
 function phaseProgress(pi) {
   const total = PHASES[pi].topics.length;
   const done = PHASES[pi].topics.filter((_, ti) => topicsDone[`p${pi}_t${ti}`]).length;
   return total ? Math.round((done / total) * 100) : 0;
 }
-
 
 function getTopicProblems(pi, ti) {
   return TOPIC_PROBLEMS[`${pi}_${ti}`] || null;
@@ -663,7 +775,6 @@ function topicProblemStats(pi, ti) {
   return { solved, total: probs.length };
 }
 
-
 function renderStats() {
   const { current, best } = calcStreak();
   document.getElementById('streakNum').textContent = current;
@@ -674,7 +785,26 @@ function renderStats() {
 
   const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
   const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
-  document.getElementById('todayDate').textContent = `${days[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+  document.getElementById('todayDate').textContent = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+
+  // Kalender stats
+  const el1 = document.getElementById('calTotalDays');
+  const el2 = document.getElementById('calThisMonth');
+  const el3 = document.getElementById('calConsistency');
+  if (el1) el1.textContent = doneDays.size;
+  if (el2) el2.textContent = thisMonthCount();
+  if (el3) {
+    // Days since first entry
+    const sorted = [...doneDays].sort();
+    if (sorted.length > 0) {
+      const firstDay = new Date(sorted[0]);
+      const totalPossible = Math.floor((now - firstDay) / 86400000) + 1;
+      const pct = Math.min(100, Math.round(doneDays.size / totalPossible * 100));
+      el3.textContent = pct + '%';
+    } else {
+      el3.textContent = '0%';
+    }
+  }
 }
 
 function renderTasks() {
@@ -688,7 +818,7 @@ function renderTasks() {
   const stamped = doneDays.has(todayStr);
   const btn = document.getElementById('stampBtn');
   btn.disabled = stamped;
-  btn.textContent = stamped ? '✕  HARI INI SUDAH DITANDAI' : '✕   TANDAI HARI INI SELESAI';
+  btn.textContent = stamped ? '✓  HARI INI SUDAH DITANDAI' : '✓   TANDAI HARI INI SELESAI';
   btn.classList.toggle('stamped', stamped);
 }
 
@@ -750,7 +880,6 @@ function renderKurikulum() {
                   onclick="event.stopPropagation(); toggleProbs('${probKey}')">
                   CF ${stats.solved}/${stats.total}
                 </button>`;
-
               probsPanelHtml = `
                 <div class="problems-panel">
                   <div class="problems-header">// Codeforces Problems — latihan sampe kebiasaan</div>
@@ -780,11 +909,6 @@ function renderKurikulum() {
                 </div>
                 ${probsPanelHtml}
               </div>`;
-
-            return `<div class="topic-check ${checked ? 'checked' : ''}" onclick="toggleTopic(${pi},${ti})">
-              <div class="topic-check-box">${checked ? '✓' : ''}</div>
-              <span class="topic-check-label">${topic}</span>
-            </div>`;
           }).join('')}
         </div>
       </div>
@@ -803,7 +927,7 @@ function toggleTask(id) {
 function stampToday() {
   if (doneDays.has(todayStr)) return;
   doneDays.add(todayStr); save('cp_done_days', [...doneDays]);
-  renderAll(); showToast('✕ Hari ini dicatat! Jangan putus rantainya 🔥');
+  renderAll(); showToast('✓ Hari ini dicatat! Jangan putus rantainya 🔥');
 }
 
 function toggleDay(ds) {
@@ -830,11 +954,9 @@ function toggleTopic(pi, ti) {
   save('cp_topics', topicsDone); renderKurikulum();
 }
 
-
 function toggleProbs(probKey) {
   if (openProbs.has(probKey)) openProbs.delete(probKey); else openProbs.add(probKey);
   save('cp_open_probs', [...openProbs]);
-  // update just this item without full re-render for perf
   const [pi, ti] = probKey.split('_').map(Number);
   const el = document.getElementById(`ti_${pi}_${ti}`);
   if (el) el.classList.toggle('probs-open', openProbs.has(probKey));
@@ -843,7 +965,6 @@ function toggleProbs(probKey) {
 function toggleProblem(pid) {
   problemsDone[pid] = !problemsDone[pid];
   save('cp_problems', problemsDone);
-  // targeted DOM update
   const row = document.querySelector(`[onclick="toggleProblem('${pid}')"]`);
   if (row) {
     const solved = problemsDone[pid];
@@ -851,7 +972,6 @@ function toggleProblem(pid) {
     row.querySelector('.problem-check').textContent = solved ? '✓' : '';
     row.querySelector('.problem-title').style.color = solved ? 'var(--muted)' : '';
     row.querySelector('.problem-title').style.textDecoration = solved ? 'line-through' : '';
-    // update progress bar in parent panel
     const panel = row.closest('.problems-panel');
     if (panel) {
       const allRows = panel.querySelectorAll('.problem-row');
@@ -863,7 +983,6 @@ function toggleProblem(pid) {
       if (fill) fill.style.width = pct + '%';
       if (txt) txt.textContent = `${solvedCount}/${total} solved`;
     }
-    // update button badge
     const topicItem = row.closest('.topic-item');
     if (topicItem) {
       const allProbRows = topicItem.querySelectorAll('.problem-row');
@@ -876,7 +995,7 @@ function toggleProblem(pid) {
       }
     }
   }
-  renderStats(); // update total solved count
+  renderStats();
 }
 
 function saveNote() { notes[todayStr] = document.getElementById('noteInput').value; save('cp_notes', notes); }
@@ -896,7 +1015,7 @@ function showToast(msg) {
 
 function renderAll() {
   renderStats(); renderTasks(); renderCalendar(); renderKurikulum(); renderNote();
-  document.getElementById('footerTip').textContent = TIPS[new Date().getDay() % TIPS.length];
+  document.getElementById('footerTip').textContent = TIPS[now.getDay() % TIPS.length];
 }
 
 renderAll();
